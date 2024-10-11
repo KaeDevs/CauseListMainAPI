@@ -11,6 +11,9 @@ app.listen(port, () => {
 app.get('/', (req, res) => {
     res.send("<h1>Hello from API</h1>");
 });
+app.get('/users', (req, res) => {
+    res.send("<h1>Hello from API</h1>");
+});
 
 app.get('/data', (req, res) => {
     const page = parseInt(req.query.page) || 1;  // Page number (defaults to 1)
