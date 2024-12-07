@@ -2,9 +2,9 @@ const express = require('express');
 const fs = require('fs');
 // node index.js
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.listen(port, '192.168.1.3', () => {
+app.listen(port, '0.0.0.0', () => {
     console.log('Server is listening on port 3000');
 });
 
