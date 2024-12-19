@@ -88,7 +88,7 @@ def save_webpage_selenium(url, save_dir):
     driver.quit()
 
 # Example usage
-midPart, lastPart = Generate_Parts("2024-12-09")
+midPart, lastPart = Generate_Parts()
 print(midPart, "  " ,lastPart)
 
 
