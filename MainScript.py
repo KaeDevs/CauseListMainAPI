@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from bs4 import BeautifulSoup
 
@@ -86,18 +87,19 @@ def Generate_JSON(path, name):
     json_data = json.dumps(final_json, indent=4)
 
 
-    with open(f'{name}.json', 'w', encoding='utf-8') as json_file:
+    with open(f'jsons\{name}{current_date}.json', 'w', encoding='utf-8') as json_file:
         json_file.write(json_data)
 
 
     print(json_data)
 
+current_date = datetime.now().strftime("%d-%m-%Y")
 try:
-    Generate_JSON('saved_webpage\mdu.html', "mdu")
+    Generate_JSON(f'saved_webpage\mdu{current_date}.html', "mdu")
 except(Exception):
     print(Exception)
 
 try:
-    Generate_JSON('saved_webpage\madr.html', "madr")
+    Generate_JSON(f'saved_webpage\madr{current_date}.html', "madr")
 except(Exception):
     print(Exception)

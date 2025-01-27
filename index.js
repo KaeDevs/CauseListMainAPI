@@ -21,11 +21,12 @@ app.get('/data/:district', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     let dist = "";  // Change const to let for reassignment
     const option = req.params.district;
-
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = "mdu.json";
+        dist = `jsons/mdu${formattedDate}.json`;
     } else {
-        dist = "madr.json";
+        dist = `jsons/madr${formattedDate}.json`;
     }
 
     fs.readFile(dist, 'utf8', (err, data) => {
@@ -58,11 +59,12 @@ app.get('/data/:district', (req, res) => {
 app.get('/courts/:district', (req, res) => {
     let dist = "";  // Change const to let for reassignment
     const option = req.params.district;
-
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = "mdu.json";
+        dist = `jsons/mdu${formattedDate}.json`;
     } else {
-        dist = "madr.json";
+        dist = `jsons/madr${formattedDate}.json`;
     }
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
@@ -88,12 +90,12 @@ app.get('/courts/:district', (req, res) => {
 app.get('/data/:advocateName/:district', (req, res) => {
     dist = "";
     const option = req.params.district;
-    if (option == "mdu") {
-        dist = "mdu.json";
-    }
-    else {
-        dist = "madr.json";
-
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+    if (option === "mdu") {
+        dist = `jsons/mdu${formattedDate}.json`;
+    } else {
+        dist = `jsons/madr${formattedDate}.json`;
     }
     const advocateName = req.params.advocateName.toUpperCase();
 
@@ -172,12 +174,12 @@ app.get('/data/:advocateName/:district', (req, res) => {
 app.get('/keys/:district', (req, res) => {
     const dist = "";
     const option = req.params.district;
-    if (option == "mdu") {
-        dist = "mdu.json";
-    }
-    else {
-        dist = "madr.json";
-
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+    if (option === "mdu") {
+        dist = `jsons/mdu${formattedDate}.json`;
+    } else {
+        dist = `jsons/madr${formattedDate}.json`;
     }
 
     fs.readFile(dist, 'utf8', (err, data) => {

@@ -56,11 +56,12 @@ def Generate_Url(midpart, lastpart, mdu):
 def save_webpage_selenium(url, save_dir):
     # Setup WebDriver (Chrome in this case)
     # driver_service = Service('/path/to/chromedriver')  # Update this with your ChromeDriver path
+    current_date = datetime.now().strftime("%d-%m-%Y")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     if("madurai" in url):
-        name = "mdu"
+        name = f"mdu{current_date}"
     else:
-        name = "madr"
+        name = f"madr{current_date}"
 
    
     # Load the webpage
@@ -88,7 +89,8 @@ def save_webpage_selenium(url, save_dir):
     driver.quit()
 
 # Example usage
-midPart, lastPart = Generate_Parts("2025-01-27")
+# midPart, lastPart = Generate_Parts("2025-01-27")
+midPart, lastPart = Generate_Parts()
 print(midPart, "  " ,lastPart)
 
 
