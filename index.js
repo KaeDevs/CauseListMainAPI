@@ -4,8 +4,6 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000; // Use Render's dynamic PORT or fallback to 3000
 const HOST = '0.0.0.0';
-const path = require('path');
-
 
 app.listen(PORT, HOST, () => {
     console.log('Server is listening on port 3000');
@@ -26,7 +24,7 @@ app.get('/data/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
+        dist = `mdu${formattedDate}.json`;
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
@@ -64,7 +62,7 @@ app.get('/courts/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
+        dist = `jsons/mdu${formattedDate}.json`;
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
@@ -73,7 +71,7 @@ app.get('/courts/:district', (req, res) => {
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
             print(err);
-            res.status(500).send('Error reading the data file2');
+            res.status(500).send('Error reading the data file');
             return;
         }
 
@@ -97,7 +95,7 @@ app.get('/data/:advocateName/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
+        dist = `jsons/mdu${formattedDate}.json`;
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
@@ -106,7 +104,7 @@ app.get('/data/:advocateName/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file3');
+            res.status(500).send('Error reading the data file');
             return;
         }
 
@@ -182,7 +180,7 @@ app.get('/keys/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
+        dist = `jsons/mdu${formattedDate}.json`;
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
@@ -191,7 +189,7 @@ app.get('/keys/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file4');
+            res.status(500).send('Error reading the data file');
             return;
         }
 
