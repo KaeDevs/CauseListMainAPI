@@ -28,12 +28,13 @@ app.get('/data/:district', (req, res) => {
     if (option === "mdu") {
         dist = path.join(process.cwd(), `mdu${formattedDate}.json`);
     } else {
-        dist = `jsons/madr${formattedDate}.json`;
+        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
     }
     
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
+            console.log(err);
             res.status(500).send(`Error reading the data file1 ${dist}`);
             return;
         }
