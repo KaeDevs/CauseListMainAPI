@@ -24,14 +24,14 @@ app.get('/data/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
+        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file');
+            res.status(500).send('Error reading the data file1');
             return;
         }
 
@@ -62,7 +62,7 @@ app.get('/courts/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
+        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
@@ -71,7 +71,7 @@ app.get('/courts/:district', (req, res) => {
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
             print(err);
-            res.status(500).send('Error reading the data file');
+            res.status(500).send('Error reading the data file2');
             return;
         }
 
@@ -95,7 +95,7 @@ app.get('/data/:advocateName/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
+        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
@@ -104,7 +104,7 @@ app.get('/data/:advocateName/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file');
+            res.status(500).send('Error reading the data file3');
             return;
         }
 
@@ -189,7 +189,7 @@ app.get('/keys/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file');
+            res.status(500).send('Error reading the data file4');
             return;
         }
 
