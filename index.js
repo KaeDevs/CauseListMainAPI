@@ -4,6 +4,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000; // Use Render's dynamic PORT or fallback to 3000
 const HOST = '0.0.0.0';
+const path = require('path');
+
 
 app.listen(PORT, HOST, () => {
     console.log('Server is listening on port 3000');
@@ -180,7 +182,7 @@ app.get('/keys/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
+        dist = path.resolve(__dirname, 'jsons', `mdu${formattedDate}.json`);
         console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
