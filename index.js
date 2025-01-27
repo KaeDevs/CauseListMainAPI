@@ -63,9 +63,11 @@ app.get('/courts/:district', (req, res) => {
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
         dist = `jsons/mdu${formattedDate}.json`;
+        console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
+    console.log(dist)
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
             print(err);
@@ -94,6 +96,7 @@ app.get('/data/:advocateName/:district', (req, res) => {
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
         dist = `jsons/mdu${formattedDate}.json`;
+        console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
@@ -178,9 +181,11 @@ app.get('/keys/:district', (req, res) => {
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
         dist = `jsons/mdu${formattedDate}.json`;
+        console.log(dist)
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
+    console.log(dist)
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
