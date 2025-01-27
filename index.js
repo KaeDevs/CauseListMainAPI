@@ -4,6 +4,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000; // Use Render's dynamic PORT or fallback to 3000
 const HOST = '0.0.0.0';
+const path = require('path');
+
 
 app.listen(PORT, HOST, () => {
     console.log('Server is listening on port 3000');
@@ -24,14 +26,15 @@ app.get('/data/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `mdu${formattedDate}.json`;
+        dist = path.join(__dirname, 'public', 'jsons', `mdu${formattedDate}.json`);
     } else {
         dist = `jsons/madr${formattedDate}.json`;
     }
+    
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file1');
+            res.status(500).send(`Error reading the data file1 ${dist}`);
             return;
         }
 
@@ -70,7 +73,7 @@ app.get('/courts/:district', (req, res) => {
     console.log(dist)
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            print(err);
+            console.error(err);
             res.status(500).send('Error reading the data file');
             return;
         }
