@@ -26,7 +26,7 @@ app.get('/data/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = path.join(process.cwd(), `mdu${formattedDate}.json`);
+        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
     } else {
         dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
     }
