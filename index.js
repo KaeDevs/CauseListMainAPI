@@ -75,36 +75,84 @@ app.get('/courts/:district', (req, res) => {
     });
 });
 
-app.get('/data/:advocateName/:district', (req, res) => {
+app.get('/dataoa/:advocateName/:district', (req, res) => {
     const formattedDate = getFormattedDate(req.query.date);
-    const option = req.params.district;
-    const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
-    const advocateName = req.params.advocateName.toUpperCase();
+    const district = req.params.district;
+    let advocateName = req.params.advocateName;
+    let courtNumber = req.query.courtNumber; // Court number as a string
+    const filePath = path.join(process.cwd(), `jsons/${district}${formattedDate}.json`);
 
-    fs.readFile(dist, 'utf8', (err, data) => {
+    // Treat "null" or empty string as no advocateName provided
+    advocateName = advocateName && advocateName.toUpperCase() !== "NULL" ? advocateName.toUpperCase() : null;
+
+    // Normalize courtNumber by removing leading zeros and converting to number
+    if (courtNumber) {
+        courtNumber = parseInt(courtNumber, 10).toString(); // Ensure it's a string for comparison
+    }
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading the data file');
-            return;
+            console.error(err);
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
+
+        // Filter cases based on the presence of advocateName and courtNumber
         const filteredCases = jsonData["cases"].filter(caseItem => {
             const petitionerAdvocates = caseItem.petitioner_advocates.toUpperCase();
             const respondentAdvocates = caseItem.respondent_advocates.toUpperCase();
-            return petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName);
+
+            // Extract numeric part from "COURT NO. 14"
+            const caseCourtNumber = caseItem["COURT NO."]
+                .replace(/[^0-9]/g, ''); // Extract only numbers
+
+            // Special handling for case number "00" or "0"
+            if (courtNumber === "0" || courtNumber === "00") {
+                return (
+                    (petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)) &&
+                    (caseCourtNumber === "0" || caseCourtNumber === "00") // Only allow "0" or "00" cases
+                );
+            }
+
+            // Regular filtering logic for other cases
+            if (advocateName && courtNumber) {
+                // Filter by both advocateName and courtNumber
+                return (
+                    (petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)) &&
+                    caseCourtNumber === courtNumber
+                );
+            } else if (advocateName) {
+                // Filter by advocateName only
+                return (
+                    petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)
+                );
+            } else if (courtNumber) {
+                // Filter by courtNumber only
+                return caseCourtNumber === courtNumber;
+            }
+            return false; // No valid query parameters provided
         });
 
         if (filteredCases.length === 0) {
-            return res.status(404).json({ message: `No cases found for advocate: ${advocateName}` });
+            return res.status(404).json({
+                message: `No cases found${
+                    advocateName ? ` for advocate: ${advocateName}` : ''
+                }${courtNumber ? ` in court number: ${courtNumber}` : ''}`
+            });
         }
 
         res.json({
-            advocate: advocateName,
+            ...(advocateName && { advocate: advocateName }), // Include advocate only if present
+            ...(courtNumber && { courtNumber: courtNumber }), // Include courtNumber only if present
             totalCases: filteredCases.length,
             cases: filteredCases
         });
     });
 });
+
+
+
 
 app.get('/keys/:district', (req, res) => {
     const formattedDate = getFormattedDate(req.query.date);
@@ -121,6 +169,8 @@ app.get('/keys/:district', (req, res) => {
         res.json(jsonData.court_numbers);
     });
 });
+
+
 
 // app.get('/data/:advocateName/:courtNumber', (req, res) => {
 //     const advocateName = req.params.advocateName.toUpperCase();
