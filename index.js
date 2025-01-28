@@ -1,19 +1,31 @@
 const express = require('express');
 const fs = require('fs');
-// node index.js
+const path = require('path');
+
 const app = express();
 const PORT = process.env.PORT || 3000; // Use Render's dynamic PORT or fallback to 3000
 const HOST = '0.0.0.0';
-const path = require('path');
 
+// Helper to get formatted date
+function getFormattedDate(dateStr) {
+    if (dateStr) {
+        const parsedDate = new Date(dateStr);
+        if (!isNaN(parsedDate)) {
+            return `${String(parsedDate.getDate()).padStart(2, '0')}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${parsedDate.getFullYear()}`;
+        }
+    }
+    const now = new Date();
+    return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+}
 
 app.listen(PORT, HOST, () => {
-    console.log('Server is listening on port 3000');
+    console.log(`Server is listening on port ${PORT}`);
 });
 
 app.get('/', (req, res) => {
     res.send("<h1>Hello from API</h1>");
 });
+
 app.get('/users', (req, res) => {
     res.send("<h1>Hello from API</h1>");
 });
@@ -21,56 +33,36 @@ app.get('/users', (req, res) => {
 app.get('/data/:district', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    let dist = "";  // Change const to let for reassignment
+    const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
-    const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-    if (option === "mdu") {
-        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
-    } else {
-        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
-    }
-    
+    const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
             console.log(err);
-            res.status(500).send(`Error reading the data file1 ${dist}`);
+            res.status(500).send(`Error reading the data file: ${dist}`);
             return;
         }
 
         const jsonData = JSON.parse(data);
-
         const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
+        const paginatedData = jsonData["cases"].slice(startIndex, startIndex + limit);
 
-        // Get the paginated slice of cases
-        const paginatedData = jsonData["cases"].slice(startIndex, endIndex);
-
-        const response = {
+        res.json({
             page: page,
             limit: limit,
-            totalItems: jsonData["cases"].length,  // Total items in the 'cases' array
-            totalPages: Math.ceil(jsonData["cases"].length / limit),  // Total pages based on limit
+            totalItems: jsonData["cases"].length,
+            totalPages: Math.ceil(jsonData["cases"].length / limit),
             data: paginatedData
-        };
-
-        res.json(response);
+        });
     });
 });
 
-
 app.get('/courts/:district', (req, res) => {
-    let dist = "";  // Change const to let for reassignment
+    const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
-    const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-    if (option === "mdu") {
-        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
-    } else {
-        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
-    }
-    console.log(dist)
+    const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
+
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
             console.error(err);
@@ -79,29 +71,14 @@ app.get('/courts/:district', (req, res) => {
         }
 
         const jsonData = JSON.parse(data);
-
-
-        const courts = jsonData.courts;
-
-        const response = {
-            CList: courts
-        }
-
-
-        res.json(response);
+        res.json({ CList: jsonData.courts });
     });
 });
 
 app.get('/data/:advocateName/:district', (req, res) => {
-    dist = "";
+    const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
-    const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-    if (option === "mdu") {
-        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
-    } else {
-        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
-    }
+    const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
     const advocateName = req.params.advocateName.toUpperCase();
 
     fs.readFile(dist, 'utf8', (err, data) => {
@@ -111,20 +88,15 @@ app.get('/data/:advocateName/:district', (req, res) => {
         }
 
         const jsonData = JSON.parse(data);
-
-
         const filteredCases = jsonData["cases"].filter(caseItem => {
             const petitionerAdvocates = caseItem.petitioner_advocates.toUpperCase();
             const respondentAdvocates = caseItem.respondent_advocates.toUpperCase();
-
             return petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName);
         });
-
 
         if (filteredCases.length === 0) {
             return res.status(404).json({ message: `No cases found for advocate: ${advocateName}` });
         }
-
 
         res.json({
             advocate: advocateName,
@@ -133,6 +105,23 @@ app.get('/data/:advocateName/:district', (req, res) => {
         });
     });
 });
+
+app.get('/keys/:district', (req, res) => {
+    const formattedDate = getFormattedDate(req.query.date);
+    const option = req.params.district;
+    const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
+
+    fs.readFile(dist, 'utf8', (err, data) => {
+        if (err) {
+            res.status(500).send('Error reading the data file');
+            return;
+        }
+
+        const jsonData = JSON.parse(data);
+        res.json(jsonData.court_numbers);
+    });
+});
+
 // app.get('/data/:advocateName/:courtNumber', (req, res) => {
 //     const advocateName = req.params.advocateName.toUpperCase();
 //     const courtNumberPrefix = `COURT NO. ${req.params.courtNumber.padStart(2, '0')}`;
@@ -176,30 +165,30 @@ app.get('/data/:advocateName/:district', (req, res) => {
 // });
 
 
-app.get('/keys/:district', (req, res) => {
-    const dist = "";
-    const option = req.params.district;
-    const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-    if (option === "mdu") {
-        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
-    } else {
-        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
-    }
-    console.log(dist)
+// app.get('/keys/:district', (req, res) => {
+//     const dist = "";
+//     const option = req.params.district;
+//     const now = new Date();
+//     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+//     if (option === "mdu") {
+//         dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
+//     } else {
+//         dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
+//     }
+//     console.log(dist)
 
-    fs.readFile(dist, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading the data file');
-            return;
-        }
+//     fs.readFile(dist, 'utf8', (err, data) => {
+//         if (err) {
+//             res.status(500).send('Error reading the data file');
+//             return;
+//         }
 
-        const jsonData = JSON.parse(data);
-
-
-        const keys = jsonData.court_numbers;
+//         const jsonData = JSON.parse(data);
 
 
-        res.json(keys);
-    });
-});
+//         const keys = jsonData.court_numbers;
+
+
+//         res.json(keys);
+//     });
+// });
