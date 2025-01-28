@@ -66,10 +66,9 @@ app.get('/courts/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
-        console.log(dist)
+        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
     } else {
-        dist = `jsons/madr${formattedDate}.json`;
+        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
     }
     console.log(dist)
     fs.readFile(dist, 'utf8', (err, data) => {
@@ -99,10 +98,9 @@ app.get('/data/:advocateName/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
-        console.log(dist)
+        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
     } else {
-        dist = `jsons/madr${formattedDate}.json`;
+        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
     }
     const advocateName = req.params.advocateName.toUpperCase();
 
@@ -184,10 +182,9 @@ app.get('/keys/:district', (req, res) => {
     const now = new Date();
     const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
     if (option === "mdu") {
-        dist = `jsons/mdu${formattedDate}.json`;
-        console.log(dist)
+        dist = path.join(process.cwd(), `jsons/mdu${formattedDate}.json`);
     } else {
-        dist = `jsons/madr${formattedDate}.json`;
+        dist = path.join(process.cwd(),`jsons/madr${formattedDate}.json`);
     }
     console.log(dist)
 

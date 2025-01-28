@@ -53,16 +53,25 @@ def Generate_Url(midpart, lastpart, mdu):
 
 
 
-def save_webpage_selenium(url, save_dir):
+def save_webpage_selenium(url, save_dir, date=None):
     # Setup WebDriver (Chrome in this case)
-    # driver_service = Service('/path/to/chromedriver')  # Update this with your ChromeDriver path
-    current_date = datetime.now().strftime("%d-%m-%Y")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    if("madurai" in url):
-        name = f"mdu{current_date}"
+    if(date):
+        current_date = datetime.strptime(date, "%d-%m-%Y")
+        # Format current_date to exclude time part and remove invalid filename characters
+        formatted_date = current_date.strftime("%d-%m-%Y")  # This excludes the time part
     else:
-        name = f"madr{current_date}"
+        current_date = datetime.now()
+        # Format current_date to exclude time part and remove invalid filename characters
+        formatted_date = current_date.strftime("%d-%m-%Y")  # This excludes the time part
+    
+    if("madurai" in url):
+        name = f"mdu{formatted_date}"
+    else:
+        name = f"madr{formatted_date}"
 
+        print(f"name is :: {name}")
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
    
     # Load the webpage
     driver.get(url)
@@ -89,8 +98,10 @@ def save_webpage_selenium(url, save_dir):
     driver.quit()
 
 # Example usage
-# midPart, lastPart = Generate_Parts("2025-01-27")
-midPart, lastPart = Generate_Parts()
+date = "28-01-2025"
+date_for_generate = "2025-01-28"
+midPart, lastPart = Generate_Parts(date_for_generate)
+# midPart, lastPart = Generate_Parts()
 print(midPart, "  " ,lastPart)
 
 
@@ -99,5 +110,9 @@ url2 = Generate_Url(midpart=midPart, lastpart=lastPart, mdu = False)
 print(url1)
 print(url2)
 
-save_webpage_selenium(url1, "saved_webpage")
-save_webpage_selenium(url2, "saved_webpage")
+save_webpage_selenium(url1, "saved_webpage", date)
+save_webpage_selenium(url2, "saved_webpage", date)
+
+
+# save_webpage_selenium(url1, "saved_webpage")
+# save_webpage_selenium(url2, "saved_webpage")

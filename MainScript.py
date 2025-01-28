@@ -93,7 +93,8 @@ def Generate_JSON(path, name):
 
     print(json_data)
 
-current_date = datetime.now().strftime("%d-%m-%Y")
+# current_date = datetime.now().strftime("%d-%m-%Y")
+current_date = "28-01-2025"
 try:
     Generate_JSON(f'saved_webpage\mdu{current_date}.html', "mdu")
 except(Exception):
