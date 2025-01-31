@@ -39,9 +39,11 @@ app.get('/data/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            console.log(err);
-            res.status(500).send(`Error reading the data file: ${dist}`);
-            return;
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
+            console.error(err);
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
@@ -65,9 +67,11 @@ app.get('/courts/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
             console.error(err);
-            res.status(500).send('Error reading the data file');
-            return;
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
@@ -92,6 +96,9 @@ app.get('/dataoa/:advocateName/:district', (req, res) => {
 
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
             console.error(err);
             return res.status(500).send('Error reading the data file');
         }

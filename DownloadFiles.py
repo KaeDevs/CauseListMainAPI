@@ -98,8 +98,8 @@ def save_webpage_selenium(url, save_dir, date=None):
     driver.quit()
 
 # Example usage
-date = "02-01-2025"
-date_for_generate = "2025-01-02"
+date = "01-02-2025"
+date_for_generate = "2025-02-01"
 midPart, lastPart = Generate_Parts(date_for_generate)
 # midPart, lastPart = Generate_Parts()
 print(midPart, "  " ,lastPart)
