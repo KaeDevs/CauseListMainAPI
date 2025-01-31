@@ -18,6 +18,16 @@ function getFormattedDate(dateStr) {
     return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 }
 
+function isWeekend(dateSTR){
+    const parsedDate = new Date(dateSTR);
+    if(!isNaN(parsedDate)){
+        const day = parsedDate.getDay();
+        return day === 0 || day == 6;
+    }
+    return false;
+
+}
+
 app.listen(PORT, HOST, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
@@ -31,6 +41,10 @@ app.get('/users', (req, res) => {
 });
 
 app.get('/data/:district', (req, res) => {
+    const ipdate = req.query.date || new Date().toISOString().split('T')[0];
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const formattedDate = getFormattedDate(req.query.date);
@@ -61,6 +75,10 @@ app.get('/data/:district', (req, res) => {
 });
 
 app.get('/courts/:district', (req, res) => {
+    const ipdate = req.query.date || new Date().toISOString().split('T')[0];
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
+    }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
     const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
@@ -80,6 +98,10 @@ app.get('/courts/:district', (req, res) => {
 });
 
 app.get('/dataoa/:advocateName/:district', (req, res) => {
+    const ipdate = req.query.date || new Date().toISOString().split('T')[0];
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
+    }
     const formattedDate = getFormattedDate(req.query.date);
     const district = req.params.district;
     let advocateName = req.params.advocateName;
@@ -162,6 +184,10 @@ app.get('/dataoa/:advocateName/:district', (req, res) => {
 
 
 app.get('/keys/:district', (req, res) => {
+    const ipdate = req.query.date || new Date().toISOString().split('T')[0];
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
+    }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
     const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
