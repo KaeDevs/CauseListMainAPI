@@ -15,7 +15,7 @@ def Generate_JSON(path, name):
     justices = ""
     timing = ""
     current_category = ""
-    category_counts = {}  # Dictionary to track number of cases per category
+    category_counts = {}  # Dictionary to track number of cases with serial numbers per category
     category_case_list = {}  # Dictionary to store cases under each category before modifying
 
     rows = soup.find_all('tr')
@@ -56,10 +56,13 @@ def Generate_JSON(path, name):
 
         cols = row.find_all('td')
         if len(cols) >= 5:
-            category_counts[current_category] += 1  # Increment case count
+            serial_number = cols[0].get_text(strip=True)
+
+            if serial_number:  # Count only cases that have a serial number
+                category_counts[current_category] += 1
 
             case_data = {
-                'serial_number': cols[0].get_text(strip=True),
+                'serial_number': serial_number,
                 'case_number': cols[1].get_text(strip=True),
                 'parties': cols[2].get_text(strip=True).replace('VS', ' VS '),
                 'petitioner_advocates': cols[3].get_text(strip=True),
