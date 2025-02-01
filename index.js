@@ -43,7 +43,7 @@ app.get('/users', (req, res) => {
 app.get('/data/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
     if(isWeekend(ipdate)){
-        return res.json({message : "Data on Weekends are not Available!!"})
+        return res.statusCode(404).json({message : "Data on Weekends are not Available!!"})
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
