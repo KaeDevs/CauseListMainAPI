@@ -18,9 +18,9 @@ function getFormattedDate(dateStr) {
     return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 }
 
-function isWeekend(dateSTR){
+function isWeekend(dateSTR) {
     const parsedDate = new Date(dateSTR);
-    if(!isNaN(parsedDate)){
+    if (!isNaN(parsedDate)) {
         const day = parsedDate.getDay();
         return day === 0 || day == 6;
     }
@@ -42,8 +42,8 @@ app.get('/users', (req, res) => {
 
 app.get('/data/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if(isWeekend(ipdate)){
-        return res.statusCode(404).json({message : "Data on Weekends are not Available!!"})
+    if (isWeekend(ipdate)) {
+        return res.status(404).json({ message: "Data on Weekends are not Available!!" })
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -51,10 +51,25 @@ app.get('/data/:district', (req, res) => {
     const option = req.params.district;
     const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
 
-    fs.readFile(dist, 'utf8', (err, data) => {
+    fs.readFile(dist, 'utf8', async (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                return res.status(404).json({ message: 'Data is not uploaded yet' });
+                 try {
+                await runGenerateScript(formattedDate); // Generate the data
+                const newData = fs.readFileSync(dist, 'utf8'); // Retry reading
+                const jsonData = JSON.parse(newData);
+                const startIndex = (page - 1) * limit;
+                const paginatedData = jsonData["cases"].slice(startIndex, startIndex + limit);
+                return res.json({
+                    page,
+                    limit,
+                    totalItems: jsonData["cases"].length,
+                    totalPages: Math.ceil(jsonData["cases"].length / limit),
+                    data: paginatedData
+                });
+            } catch (e) {
+                return res.status(500).json({ message: "Unable to get data for this date." });
+            }
             }
             console.error(err);
             return res.status(500).send('Error reading the data file');
@@ -76,17 +91,24 @@ app.get('/data/:district', (req, res) => {
 
 app.get('/courts/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if(isWeekend(ipdate)){
-        return res.json({message : "Data on Weekends are not Available!!"})
+    if (isWeekend(ipdate)) {
+        return res.json({ message: "Data on Weekends are not Available!!" })
     }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
     const dist = path.join(process.cwd(), `jsons/${option}${formattedDate}.json`);
 
-    fs.readFile(dist, 'utf8', (err, data) => {
+    fs.readFile(dist, 'utf8', async (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                return res.status(404).json({ message: 'Data is not uploaded yet' });
+                 try {
+                await runGenerateScript(formattedDate); // Generate the data
+                const newData = fs.readFileSync(dist, 'utf8'); // Retry reading
+                const jsonData = JSON.parse(newData);
+                return res.json({ CList: jsonData.courts });
+            } catch (e) {
+                return res.status(500).json({ message: "Unable to get data for this date." });
+            }
             }
             console.error(err);
             return res.status(500).send('Error reading the data file');
@@ -99,8 +121,8 @@ app.get('/courts/:district', (req, res) => {
 
 app.get('/dataoa/:advocateName/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if(isWeekend(ipdate)){
-        return res.json({message : "Data on Weekends are not Available!!"})
+    if (isWeekend(ipdate)) {
+        return res.json({ message: "Data on Weekends are not Available!!" })
     }
     const formattedDate = getFormattedDate(req.query.date);
     const district = req.params.district;
@@ -116,10 +138,25 @@ app.get('/dataoa/:advocateName/:district', (req, res) => {
         courtNumber = parseInt(courtNumber, 10).toString(); // Ensure it's a string for comparison
     }
 
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(filePath, 'utf8', async (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                return res.status(404).json({ message: 'Data is not uploaded yet' });
+                 try {
+                await runGenerateScript(formattedDate); // Generate the data
+                const newData = fs.readFileSync(filePath, 'utf8'); // Retry reading
+                const jsonData = JSON.parse(newData);
+                const startIndex = (page - 1) * limit;
+                const paginatedData = jsonData["cases"].slice(startIndex, startIndex + limit);
+                return res.json({
+                    page,
+                    limit,
+                    totalItems: jsonData["cases"].length,
+                    totalPages: Math.ceil(jsonData["cases"].length / limit),
+                    data: paginatedData
+                });
+            } catch (e) {
+                return res.status(500).json({ message: "Unable to get data for this date." });
+            }
             }
             console.error(err);
             return res.status(500).send('Error reading the data file');
@@ -165,9 +202,8 @@ app.get('/dataoa/:advocateName/:district', (req, res) => {
 
         if (filteredCases.length === 0) {
             return res.status(404).json({
-                message: `No cases found${
-                    advocateName ? ` for advocate: ${advocateName}` : ''
-                }${courtNumber ? ` in court number: ${courtNumber}` : ''}`
+                message: `No cases found${advocateName ? ` for advocate: ${advocateName}` : ''
+                    }${courtNumber ? ` in court number: ${courtNumber}` : ''}`
             });
         }
 
@@ -185,8 +221,8 @@ app.get('/dataoa/:advocateName/:district', (req, res) => {
 
 app.get('/keys/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if(isWeekend(ipdate)){
-        return res.json({message : "Data on Weekends are not Available!!"})
+    if (isWeekend(ipdate)) {
+        return res.json({ message: "Data on Weekends are not Available!!" })
     }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
@@ -202,6 +238,25 @@ app.get('/keys/:district', (req, res) => {
         res.json(jsonData.court_numbers);
     });
 });
+
+const { exec } = require('child_process');
+const pythonScript = path.join(__dirname, 'GenerateAndParse.py');
+
+function runGenerateScript(dateStr) {
+    console.log(`Running GenerateAndParse.py for date: ${dateStr}`);
+
+    return new Promise((resolve, reject) => {
+        exec(`python "${pythonScript}" "${dateStr}"`, (err, stdout, stderr) => {
+            if (err) {
+                console.error("Python error:", stderr);
+                return reject(err);
+            }
+            console.log("Python output:", stdout);
+            resolve(stdout);
+        });
+    });
+}
+
 
 
 
