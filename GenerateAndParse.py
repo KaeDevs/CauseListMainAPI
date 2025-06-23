@@ -32,6 +32,7 @@ def Generate_Url(midpart, lastpart, mdu):
     else:
         return f"https://mhc.tn.gov.in/judis/clists/clists-madras/views/a.php?result={midpart}&cdate={lastpart}&ft=2&fil="
 
+
 def save_webpage_selenium(url, save_dir, name):
     options = Options()
     options.add_argument('--headless')  # Headless mode is a must on servers
@@ -39,15 +40,18 @@ def save_webpage_selenium(url, save_dir, name):
     options.add_argument('--disable-dev-shm-usage')
     options.binary_location = "/usr/bin/chromium"  # Key fix
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get(url)
     time.sleep(5)
+
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
+
     html_path = os.path.join(save_dir, f"{name}.html")
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(driver.page_source)
     driver.quit()
+
 
 def Generate_JSON(path, name, current_date):
     with open(path, 'r', encoding='utf-8') as file:
