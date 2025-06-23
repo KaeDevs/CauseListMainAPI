@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Use Render's dynamic PORT or fallback to 3000
 const HOST = '0.0.0.0';
 
+// Helper to get formatted date
 function getFormattedDate(dateStr) {
     if (dateStr) {
         const parsedDate = new Date(dateStr);
@@ -17,13 +18,14 @@ function getFormattedDate(dateStr) {
     return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 }
 
-function isWeekend(dateSTR) {
+function isWeekend(dateSTR){
     const parsedDate = new Date(dateSTR);
-    if (!isNaN(parsedDate)) {
+    if(!isNaN(parsedDate)){
         const day = parsedDate.getDay();
-        return day === 0 || day === 6;
+        return day === 0 || day == 6;
     }
     return false;
+
 }
 
 app.listen(PORT, HOST, () => {
@@ -40,8 +42,8 @@ app.get('/users', (req, res) => {
 
 app.get('/data/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if (isWeekend(ipdate)) {
-        return res.status(404).json({ message: "Data on Weekends are not Available!!" });
+    if(isWeekend(ipdate)){
+        return res.statusCode(404).json({message : "Data on Weekends are not Available!!"})
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -51,8 +53,11 @@ app.get('/data/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
             console.error(err);
-            return res.status(404).json({ message: "Data not found for the given date or district." });
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
@@ -60,8 +65,8 @@ app.get('/data/:district', (req, res) => {
         const paginatedData = jsonData["cases"].slice(startIndex, startIndex + limit);
 
         res.json({
-            page,
-            limit,
+            page: page,
+            limit: limit,
             totalItems: jsonData["cases"].length,
             totalPages: Math.ceil(jsonData["cases"].length / limit),
             data: paginatedData
@@ -71,8 +76,8 @@ app.get('/data/:district', (req, res) => {
 
 app.get('/courts/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if (isWeekend(ipdate)) {
-        return res.json({ message: "Data on Weekends are not Available!!" });
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
     }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
@@ -80,8 +85,11 @@ app.get('/courts/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
             console.error(err);
-            return res.status(404).json({ message: "Court data not found." });
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
@@ -91,74 +99,94 @@ app.get('/courts/:district', (req, res) => {
 
 app.get('/dataoa/:advocateName/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if (isWeekend(ipdate)) {
-        return res.json({ message: "Data on Weekends are not Available!!" });
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
     }
     const formattedDate = getFormattedDate(req.query.date);
     const district = req.params.district;
     let advocateName = req.params.advocateName;
-    let courtNumber = req.query.courtNumber;
+    let courtNumber = req.query.courtNumber; // Court number as a string
     const filePath = path.join(process.cwd(), `jsons/${district}${formattedDate}.json`);
 
+    // Treat "null" or empty string as no advocateName provided
     advocateName = advocateName && advocateName.toUpperCase() !== "NULL" ? advocateName.toUpperCase() : null;
+
+    // Normalize courtNumber by removing leading zeros and converting to number
     if (courtNumber) {
-        courtNumber = parseInt(courtNumber, 10).toString();
+        courtNumber = parseInt(courtNumber, 10).toString(); // Ensure it's a string for comparison
     }
 
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
+            if (err.code === 'ENOENT') {
+                return res.status(404).json({ message: 'Data is not uploaded yet' });
+            }
             console.error(err);
-            return res.status(404).json({ message: "Data not found for the given date or district." });
+            return res.status(500).send('Error reading the data file');
         }
 
         const jsonData = JSON.parse(data);
 
+        // Filter cases based on the presence of advocateName and courtNumber
         const filteredCases = jsonData["cases"].filter(caseItem => {
             const petitionerAdvocates = caseItem.petitioner_advocates.toUpperCase();
             const respondentAdvocates = caseItem.respondent_advocates.toUpperCase();
-            const caseCourtNumber = caseItem["COURT NO."].replace(/[^0-9]/g, '');
 
+            // Extract numeric part from "COURT NO. 14"
+            const caseCourtNumber = caseItem["COURT NO."]
+                .replace(/[^0-9]/g, ''); // Extract only numbers
+
+            // Special handling for case number "00" or "0"
             if (courtNumber === "0" || courtNumber === "00") {
                 return (
                     (petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)) &&
-                    (caseCourtNumber === "0" || caseCourtNumber === "00")
+                    (caseCourtNumber === "0" || caseCourtNumber === "00") // Only allow "0" or "00" cases
                 );
             }
 
+            // Regular filtering logic for other cases
             if (advocateName && courtNumber) {
+                // Filter by both advocateName and courtNumber
                 return (
                     (petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)) &&
                     caseCourtNumber === courtNumber
                 );
             } else if (advocateName) {
+                // Filter by advocateName only
                 return (
                     petitionerAdvocates.includes(advocateName) || respondentAdvocates.includes(advocateName)
                 );
             } else if (courtNumber) {
+                // Filter by courtNumber only
                 return caseCourtNumber === courtNumber;
             }
-            return false;
+            return false; // No valid query parameters provided
         });
 
         if (filteredCases.length === 0) {
             return res.status(404).json({
-                message: `No cases found${advocateName ? ` for advocate: ${advocateName}` : ''}${courtNumber ? ` in court number: ${courtNumber}` : ''}`
+                message: `No cases found${
+                    advocateName ? ` for advocate: ${advocateName}` : ''
+                }${courtNumber ? ` in court number: ${courtNumber}` : ''}`
             });
         }
 
         res.json({
-            ...(advocateName && { advocate: advocateName }),
-            ...(courtNumber && { courtNumber }),
+            ...(advocateName && { advocate: advocateName }), // Include advocate only if present
+            ...(courtNumber && { courtNumber: courtNumber }), // Include courtNumber only if present
             totalCases: filteredCases.length,
             cases: filteredCases
         });
     });
 });
 
+
+
+
 app.get('/keys/:district', (req, res) => {
     const ipdate = req.query.date || new Date().toISOString().split('T')[0];
-    if (isWeekend(ipdate)) {
-        return res.json({ message: "Data on Weekends are not Available!!" });
+    if(isWeekend(ipdate)){
+        return res.json({message : "Data on Weekends are not Available!!"})
     }
     const formattedDate = getFormattedDate(req.query.date);
     const option = req.params.district;
@@ -166,14 +194,14 @@ app.get('/keys/:district', (req, res) => {
 
     fs.readFile(dist, 'utf8', (err, data) => {
         if (err) {
-            return res.status(404).json({ message: "Court numbers not found." });
+            res.status(500).send('Error reading the data file');
+            return;
         }
 
         const jsonData = JSON.parse(data);
         res.json(jsonData.court_numbers);
     });
 });
-
 
 
 
@@ -246,4 +274,3 @@ app.get('/keys/:district', (req, res) => {
 
 //         res.json(keys);
 //     });
-// });
