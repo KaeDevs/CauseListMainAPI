@@ -35,13 +35,14 @@ def Generate_Url(midpart, lastpart, mdu):
 
 def save_webpage_selenium(url, save_dir, name):
     options = Options()
-    options.binary_location = "/usr/bin/chromium"  # Installed via apt
+    options.binary_location = "/usr/bin/chromium-browser"  # Use correct path
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    # Path to chromedriver (you can install via apt too)
-    driver = webdriver.Chrome(options=options)
+    service = Service("/usr/bin/chromedriver")  # Explicit path to driver
+    driver = webdriver.Chrome(service=service, options=options)
+
     driver.get(url)
     time.sleep(5)
 
@@ -53,7 +54,6 @@ def save_webpage_selenium(url, save_dir, name):
         f.write(driver.page_source)
 
     driver.quit()
-
 
 def Generate_JSON(path, name, current_date):
     with open(path, 'r', encoding='utf-8') as file:
