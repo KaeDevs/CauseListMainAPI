@@ -35,12 +35,13 @@ def Generate_Url(midpart, lastpart, mdu):
 
 def save_webpage_selenium(url, save_dir, name):
     options = Options()
-    options.add_argument('--headless')  # Headless mode is a must on servers
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.binary_location = "/usr/bin/chromium"  # Key fix
+    options.binary_location = "/usr/bin/chromium"  # Installed via apt
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Path to chromedriver (you can install via apt too)
+    driver = webdriver.Chrome(options=options)
     driver.get(url)
     time.sleep(5)
 
@@ -50,6 +51,7 @@ def save_webpage_selenium(url, save_dir, name):
     html_path = os.path.join(save_dir, f"{name}.html")
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(driver.page_source)
+
     driver.quit()
 
 
