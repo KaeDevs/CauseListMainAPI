@@ -89,20 +89,20 @@ def Generate_JSON(path, name):
 
     json_data = json.dumps(final_json, indent=4)
 
-    with open(f'jsons\{name}{current_date}.json', 'w', encoding='utf-8') as json_file:
+    with open(f'jsons\\{name}{current_date}.json', 'w', encoding='utf-8') as json_file:
         json_file.write(json_data)
 
     print(json_data)
 
 # current_date = datetime.now().strftime("%d-%m-%Y")
-current_date = "30-01-2025"
+current_date = "23-06-2025"
 try:
-    Generate_JSON(f'saved_webpage\mdu{current_date}.html', "mdu")
+    Generate_JSON(f'saved_webpage/mdu{current_date}.html', "mdu")
 except Exception as e:
     print(e)
 
 try:
-    Generate_JSON(f'saved_webpage\madr{current_date}.html', "madr")
+    Generate_JSON(f'saved_webpage/madr{current_date}.html', "madr")
 except Exception as e:
     print(e)
 
