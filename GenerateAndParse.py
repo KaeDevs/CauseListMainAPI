@@ -1,4 +1,5 @@
 # GenerateAndParse.py
+from selenium.webdriver.chrome.options import Options
 import sys
 from datetime import datetime
 from selenium import webdriver
@@ -32,6 +33,12 @@ def Generate_Url(midpart, lastpart, mdu):
         return f"https://mhc.tn.gov.in/judis/clists/clists-madras/views/a.php?result={midpart}&cdate={lastpart}&ft=2&fil="
 
 def save_webpage_selenium(url, save_dir, name):
+    options = Options()
+    options.add_argument('--headless')  # Headless mode is a must on servers
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.binary_location = "/usr/bin/chromium"  # Key fix
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(url)
     time.sleep(5)
